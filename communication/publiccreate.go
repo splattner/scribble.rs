@@ -31,17 +31,17 @@ func enterLobby(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var clientsWithSameIP int
-		requestAddress := getIPAddressFromRequest(r)
-		for _, otherPlayer := range lobby.Players {
-			if otherPlayer.GetLastKnownAddress() == requestAddress {
-				clientsWithSameIP++
-				if clientsWithSameIP >= lobby.ClientsPerIPLimit {
-					http.Error(w, "maximum amount of newPlayer per IP reached", http.StatusUnauthorized)
-					return
-				}
-			}
-		}
+		// var clientsWithSameIP int
+		// requestAddress := getIPAddressFromRequest(r)
+		// for _, otherPlayer := range lobby.Players {
+		// 	if otherPlayer.GetLastKnownAddress() == requestAddress {
+		// 		clientsWithSameIP++
+		// 		if clientsWithSameIP >= lobby.ClientsPerIPLimit {
+		// 			http.Error(w, "maximum amount of newPlayer per IP reached", http.StatusUnauthorized)
+		// 			return
+		// 		}
+		// 	}
+		// }
 
 		newPlayer := lobby.JoinPlayer(getPlayername(r))
 		newPlayer.SetLastKnownAddress(getIPAddressFromRequest(r))

@@ -1,5 +1,5 @@
 body {
-    background-color: antiquewhite;
+    background-color: #fff;
 }
 
 .noscript {
@@ -157,7 +157,7 @@ body {
     margin-bottom: 15px;
     font-size: 3rem;
     font-weight: bold;
-    color: rgb(240, 105, 127);
+    color: #1E5A96;
     margin-left: 20px;
     margin-right: 20px;
 }
@@ -228,7 +228,7 @@ input[type="button"]:active,
 }
 
 .line-width-button:checked + .line-width-button-content {
-    background-color: rgb(243, 132, 247);
+    background-color: #3FA8E0;
 }
 
 #color-picker {

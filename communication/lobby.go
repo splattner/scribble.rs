@@ -189,15 +189,15 @@ func ssrEnterLobby(w http.ResponseWriter, r *http.Request) {
 
 		var clientsWithSameIP int
 		requestAddress := getIPAddressFromRequest(r)
-		for _, otherPlayer := range lobby.Players {
-			if otherPlayer.GetLastKnownAddress() == requestAddress {
-				clientsWithSameIP++
-				if clientsWithSameIP >= lobby.ClientsPerIPLimit {
-					userFacingError(w, "Sorry, but you have exceeded the maximum number of clients per IP.")
-					return
-				}
-			}
-		}
+		// for _, otherPlayer := range lobby.Players {
+		// 	if otherPlayer.GetLastKnownAddress() == requestAddress {
+		// 		clientsWithSameIP++
+		// 		if clientsWithSameIP >= lobby.ClientsPerIPLimit {
+		// 			userFacingError(w, "Sorry, but you have exceeded the maximum number of clients per IP.")
+		// 			return
+		// 		}
+		// 	}
+		// }
 
 		newPlayer := lobby.JoinPlayer(getPlayername(r))
 

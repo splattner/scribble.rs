@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 //userFacingError will return the occurred error as a custom html page to the caller.
@@ -26,5 +28,6 @@ func remoteAddressToSimpleIP(input string) string {
 }
 
 func Serve(port int) error {
+	http.Handle("/metrics", promhttp.Handler())
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
 }

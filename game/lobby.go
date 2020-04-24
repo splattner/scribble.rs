@@ -16,11 +16,50 @@ import (
 	"github.com/Bios-Marcel/discordemojimap"
 	"github.com/agnivade/levenshtein"
 	petname "github.com/dustinkirkland/golang-petname"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
 var (
 	createDeleteMutex          = &sync.Mutex{}
 	lobbies           []*Lobby = nil
+
+	numLobbies = promauto.NewCounter(prometheus.CounterOpts{
+			Name: "scribble_total_created_lobbies",
+			Help: "The total number of created lobbies",
+	})
+
+	numCorrectGuessed = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "scribble_total_correct_guessed_words",
+		Help: "The total number of correctly guessed words",
+})
+
+	numRounds = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "scribble_total_played_rounds",
+		Help: "The total number of played rounds.",
+	})
+
+	numRoundperLobby = promauto.NewCounterVec(
+		prometheus.GaugeOpts{
+			Name: "scribble_rounds_in_lobby",
+			Help: "The total number of played rounds in an lobby",
+		},
+		[]string{"lobby"},
+	)
+
+	openLobbies = promauto.NewGauge(prometheus.GaugeOpts{
+		Name: "scribble_current_open_lobbies",
+		Help: "Current number of open lobbies",
+	})
+
+	playerInLobby = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "scribble_players_in_lobby",
+			Help: "Current number of players in a lobby",
+		},
+		[]string{"lobby"},
+	)
 )
 
 var (
@@ -191,6 +230,8 @@ func handleMessage(input string, sender *Player, lobby *Lobby) {
 			sender.State = Standby
 			WriteAsJSON(sender, JSEvent{Type: "system-message", Data: "You have correctly guessed the word."})
 
+			numCorrectGuessed.Inc()
+
 			if !lobby.isAnyoneStillGuessing() {
 				endTurn(lobby)
 			} else {
@@ -304,6 +345,7 @@ func handleKickEvent(lobby *Lobby, player *Player, toKickID string) {
 				playerToKick.ws.Close()
 			}
 			lobby.Players = append(lobby.Players[:toKick], lobby.Players[toKick+1:]...)
+			playerInLobby.WithLabelValues(lobby.ID).Dec()
 
 			recalculateRanks(lobby)
 
@@ -457,6 +499,8 @@ func advanceLobby(lobby *Lobby) {
 		}
 
 		lobby.Round++
+		numRounds.Inc()
+		numRoundperLobby(lobby.ID).Inc()
 	}
 
 	lobby.Drawer = newDrawer
@@ -628,10 +672,13 @@ type Rounds struct {
 // occurred during creation.
 func CreateLobby(playerName, language string, drawingTime, rounds, maxPlayers, customWordChance int, customWords []string, enableVotekick bool) (*Player, *Lobby, error) {
 	lobby := createLobby(drawingTime, rounds, maxPlayers, customWords, customWordChance, enableVotekick)
-	player := createPlayer(playerName)
+	numLobbies.Inc()
+	openLobbies.Inc()
 
+	player := createPlayer(playerName)
 	lobby.Players = append(lobby.Players, player)
 	lobby.Owner = player
+	playerInLobby.WithLabelValues(lobby.ID).Inc()
 
 	// Read wordlist according to the chosen language
 	words, err := readWordList(language)
@@ -714,8 +761,11 @@ func OnDisconnected(lobby *Lobby, player *Player) {
 	player.Connected = false
 	player.ws = nil
 
+	playerInLobby.WithLabelValues(lobby.ID).Dec()
+
 	if !lobby.HasConnectedPlayers() {
 		RemoveLobby(lobby.ID)
+		openLobbies.Dec()
 		log.Printf("Closing lobby %s. There are currently %d open lobbies left.\n", lobby.ID, len(lobbies))
 	} else {
 		triggerPlayersUpdate(lobby)
@@ -738,6 +788,7 @@ func (lobby *Lobby) JoinPlayer(playerName string) *Player {
 
 	//FIXME Make a dedicated method that uses a mutex?
 	lobby.Players = append(lobby.Players, player)
+	playerInLobby.WithLabelValues(lobby.ID).Inc()
 	recalculateRanks(lobby)
 	triggerPlayersUpdate(lobby)
 

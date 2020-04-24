@@ -13,6 +13,7 @@ require (
 	github.com/karrick/godirwalk v1.15.6 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/prometheus/client_golang v1.5.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/sirupsen/logrus v1.5.0 // indirect
 	github.com/spf13/cobra v1.0.0 // indirect

@@ -187,8 +187,8 @@ func ssrEnterLobby(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		var clientsWithSameIP int
-		requestAddress := getIPAddressFromRequest(r)
+		//var clientsWithSameIP int
+		//requestAddress := getIPAddressFromRequest(r)
 		// for _, otherPlayer := range lobby.Players {
 		// 	if otherPlayer.GetLastKnownAddress() == requestAddress {
 		// 		clientsWithSameIP++

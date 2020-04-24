@@ -50,9 +50,6 @@
                           placeholder="Enter your additional words, seperating them by commas">{{.CustomWords}}</textarea>
                 <b>Custom Words Chance</b>
                 <input type="range" name="custom_words_chance" min="1" max="100" value="{{.CustomWordsChance}}">
-                <b>Clients per IP Limit</b>
-                <input class="input-item" type="number" name="clients_per_ip_limit" min="{{.MinClientsPerIPLimit}}"
-                       max="{{.MaxClientsPerIPLimit}}" value="{{.ClientsPerIPLimit}}"/>
                 <b>Enable Votekick</b>
                 <input class="input-item" type="checkbox" name="enable_votekick" value="true"
                        checked="{{.EnableVotekick}}"/>

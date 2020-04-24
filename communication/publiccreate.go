@@ -31,18 +31,6 @@ func enterLobby(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// var clientsWithSameIP int
-		// requestAddress := getIPAddressFromRequest(r)
-		// for _, otherPlayer := range lobby.Players {
-		// 	if otherPlayer.GetLastKnownAddress() == requestAddress {
-		// 		clientsWithSameIP++
-		// 		if clientsWithSameIP >= lobby.ClientsPerIPLimit {
-		// 			http.Error(w, "maximum amount of newPlayer per IP reached", http.StatusUnauthorized)
-		// 			return
-		// 		}
-		// 	}
-		// }
-
 		newPlayer := lobby.JoinPlayer(getPlayername(r))
 		newPlayer.SetLastKnownAddress(getIPAddressFromRequest(r))
 
@@ -82,7 +70,6 @@ func createLobby(w http.ResponseWriter, r *http.Request) {
 	maxPlayers, maxPlayersInvalid := parseMaxPlayers(r.Form.Get("max_players"))
 	customWords, customWordsInvalid := parseCustomWords(r.Form.Get("custom_words"))
 	customWordChance, customWordChanceInvalid := parseCustomWordsChance(r.Form.Get("custom_words_chance"))
-	clientsPerIPLimit, clientsPerIPLimitInvalid := parseClientsPerIPLimit(r.Form.Get("clients_per_ip_limit"))
 	enableVotekick := r.Form.Get("enable_votekick") == "true"
 
 	//Prevent resetting the form, since that would be annoying as hell.
@@ -94,7 +81,6 @@ func createLobby(w http.ResponseWriter, r *http.Request) {
 		MaxPlayers:        r.Form.Get("max_players"),
 		CustomWords:       r.Form.Get("custom_words"),
 		CustomWordsChance: r.Form.Get("custom_words_chance"),
-		ClientsPerIPLimit: r.Form.Get("clients_per_ip_limit"),
 		EnableVotekick:    r.Form.Get("enable_votekick"),
 		Language:          r.Form.Get("language"),
 	}
@@ -117,9 +103,6 @@ func createLobby(w http.ResponseWriter, r *http.Request) {
 	if customWordChanceInvalid != nil {
 		pageData.Errors = append(pageData.Errors, customWordChanceInvalid.Error())
 	}
-	if clientsPerIPLimitInvalid != nil {
-		pageData.Errors = append(pageData.Errors, clientsPerIPLimitInvalid.Error())
-	}
 
 	if len(pageData.Errors) != 0 {
 		http.Error(w, strings.Join(pageData.Errors, ";"), http.StatusBadRequest)
@@ -127,7 +110,7 @@ func createLobby(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var playerName = getPlayername(r)
-	player, lobby, createError := game.CreateLobby(playerName, language, drawingTime, rounds, maxPlayers, customWordChance, clientsPerIPLimit, customWords, enableVotekick)
+	player, lobby, createError := game.CreateLobby(playerName, language, drawingTime, rounds, maxPlayers, customWordChance, customWords, enableVotekick)
 	if createError != nil {
 		http.Error(w, createError.Error(), http.StatusBadRequest)
 		return

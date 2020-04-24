@@ -55,7 +55,6 @@ type Lobby struct {
 	scoreEarnedByGuessers int
 	alreadyUsedWords      []string
 	CustomWordsChance     int
-	ClientsPerIPLimit     int
 	// CurrentDrawing represents the state of the current canvas. The elements
 	// consist of LineEvent and FillEvent. Please do not modify the contents
 	// of this array an only move AppendLine and AppendFill on the respective
@@ -239,7 +238,6 @@ func createLobby(
 	maxPlayers int,
 	customWords []string,
 	customWordsChance int,
-	clientsPerIPLimit int,
 	enableVotekick bool) *Lobby {
 
 	createDeleteMutex.Lock()
@@ -252,7 +250,6 @@ func createLobby(
 		CustomWords:         customWords,
 		CustomWordsChance:   customWordsChance,
 		timeLeftTickerReset: make(chan struct{}),
-		ClientsPerIPLimit:   clientsPerIPLimit,
 		EnableVotekick:      enableVotekick,
 		CurrentDrawing:      make([]interface{}, 0, 0),
 	}

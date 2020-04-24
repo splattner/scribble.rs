@@ -31,8 +31,6 @@ var (
 		MaxRounds:            20,
 		MinMaxPlayers:        2,
 		MaxMaxPlayers:        24,
-		MinClientsPerIPLimit: 1,
-		MaxClientsPerIPLimit: 24,
 	}
 	SupportedLanguages = map[string]string{
 		"english": "English",
@@ -52,8 +50,6 @@ type SettingBounds struct {
 	MaxRounds            int64
 	MinMaxPlayers        int64
 	MaxMaxPlayers        int64
-	MinClientsPerIPLimit int64
-	MaxClientsPerIPLimit int64
 }
 
 // LineEvent is basically the same as JSEvent, but with a specific Data type.
@@ -630,8 +626,8 @@ type Rounds struct {
 
 // CreateLobby allows creating a lobby, optionally returning errors that
 // occurred during creation.
-func CreateLobby(playerName, language string, drawingTime, rounds, maxPlayers, customWordChance, clientsPerIPLimit int, customWords []string, enableVotekick bool) (*Player, *Lobby, error) {
-	lobby := createLobby(drawingTime, rounds, maxPlayers, customWords, customWordChance, clientsPerIPLimit, enableVotekick)
+func CreateLobby(playerName, language string, drawingTime, rounds, maxPlayers, customWordChance int, customWords []string, enableVotekick bool) (*Player, *Lobby, error) {
+	lobby := createLobby(drawingTime, rounds, maxPlayers, customWords, customWordChance, enableVotekick)
 	player := createPlayer(playerName)
 
 	lobby.Players = append(lobby.Players, player)

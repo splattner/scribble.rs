@@ -18,8 +18,6 @@ type rocketChatPayload struct {
 }
 
 func updateRocketChat(lobby *game.Lobby, player *game.Player) {
-	log.Printf("%+v", lobby.ID)
-	log.Printf("%+v", player)
 	state := "connected"
 	players := len(lobby.Players)
 	if player.Connected {

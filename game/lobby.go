@@ -41,7 +41,7 @@ var (
 	})
 
 	numRoundperLobby = promauto.NewCounterVec(
-		prometheus.GaugeOpts{
+		prometheus.CounterOpts{
 			Name: "scribble_rounds_in_lobby",
 			Help: "The total number of played rounds in an lobby",
 		},
@@ -500,7 +500,7 @@ func advanceLobby(lobby *Lobby) {
 
 		lobby.Round++
 		numRounds.Inc()
-		numRoundperLobby(lobby.ID).Inc()
+		numRoundperLobby.With(prometheus.Labels{"lobby":lobby.ID}).Inc()
 	}
 
 	lobby.Drawer = newDrawer

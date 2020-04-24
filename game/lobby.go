@@ -33,7 +33,15 @@ var (
 	numCorrectGuessed = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "scribble_total_correct_guessed_words",
 		Help: "The total number of correctly guessed words",
-})
+	})
+	
+	correctGuesserPerPlayer = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "scribble_correct_guessed_per_player",
+			Help: "The number of correct guesses per player and lobby",
+		},
+		[]string{"lobby", "player"},
+	)
 
 	numRounds = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "scribble_total_played_rounds",
@@ -59,6 +67,14 @@ var (
 			Help: "Current number of players in a lobby",
 		},
 		[]string{"lobby"},
+	)
+
+	scrorePerPlayer = promauto.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "scribble_score_per_player",
+			Help: "Current scoring per player",
+		},
+		[]string{"lobby","player"},
 	)
 )
 
@@ -231,6 +247,10 @@ func handleMessage(input string, sender *Player, lobby *Lobby) {
 			WriteAsJSON(sender, JSEvent{Type: "system-message", Data: "You have correctly guessed the word."})
 
 			numCorrectGuessed.Inc()
+			correctGuesserPerPlayer.WithLabelValues(lobby.ID, sender.Name).Inc()
+
+			scrorePerPlayer.WithLabelValues(lobby.ID,sender.Name).Set(float64(sender.Score))
+
 
 			if !lobby.isAnyoneStillGuessing() {
 				endTurn(lobby)
@@ -336,6 +356,7 @@ func handleKickEvent(lobby *Lobby, player *Player, toKickID string) {
 				for _, otherPlayer := range lobby.Players {
 					otherPlayer.Score -= otherPlayer.LastScore
 					otherPlayer.LastScore = 0
+					scrorePerPlayer.WithLabelValues(lobby.ID,otherPlayer.Name).Set(float64(otherPlayer.Score))
 				}
 				lobby.scoreEarnedByGuessers = 0
 				//We must absolutely not set lobby.Drawer to nil, since this would cause the drawing order to be ruined.
@@ -461,6 +482,10 @@ func endTurn(lobby *Lobby) {
 		if averageScore > 0 {
 			drawer.LastScore = int(averageScore * 1.1)
 			drawer.Score += drawer.LastScore
+
+			scrorePerPlayer.WithLabelValues(lobby.ID,drawer.Name).Set(float64(drawer.Score))
+
+			
 		}
 	}
 
@@ -765,6 +790,7 @@ func OnDisconnected(lobby *Lobby, player *Player) {
 
 	if !lobby.HasConnectedPlayers() {
 		RemoveLobby(lobby.ID)
+		numRoundperLobby.Delete(prometheus.Labels{"lobby":lobby.ID})
 		openLobbies.Dec()
 		log.Printf("Closing lobby %s. There are currently %d open lobbies left.\n", lobby.ID, len(lobbies))
 	} else {

@@ -71,6 +71,7 @@ func createLobby(w http.ResponseWriter, r *http.Request) {
 	customWords, customWordsInvalid := parseCustomWords(r.Form.Get("custom_words"))
 	customWordChance, customWordChanceInvalid := parseCustomWordsChance(r.Form.Get("custom_words_chance"))
 	enableVotekick := r.Form.Get("enable_votekick") == "true"
+	private := r.Form.Get("private") == "true"
 
 	//Prevent resetting the form, since that would be annoying as hell.
 	pageData := CreatePageData{
@@ -82,6 +83,7 @@ func createLobby(w http.ResponseWriter, r *http.Request) {
 		CustomWords:       r.Form.Get("custom_words"),
 		CustomWordsChance: r.Form.Get("custom_words_chance"),
 		EnableVotekick:    r.Form.Get("enable_votekick"),
+		Private:           r.Form.Get("private"),
 		Language:          r.Form.Get("language"),
 	}
 
@@ -110,7 +112,7 @@ func createLobby(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var playerName = getPlayername(r)
-	player, lobby, createError := game.CreateLobby(playerName, language, drawingTime, rounds, maxPlayers, customWordChance, customWords, enableVotekick)
+	player, lobby, createError := game.CreateLobby(playerName, language, drawingTime, rounds, maxPlayers, customWordChance, customWords, enableVotekick, private)
 	if createError != nil {
 		http.Error(w, createError.Error(), http.StatusBadRequest)
 		return

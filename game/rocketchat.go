@@ -29,6 +29,9 @@ var netClient = &http.Client{
 }
 
 func updateRocketChat(lobby *Lobby, player *Player) {
+	if lobby.Private {
+		return
+	}
 	//We want to avoid calling the handler twice.
 	state := "connected"
 	count := 0

@@ -773,6 +773,8 @@ func OnConnected(lobby *Lobby, player *Player) {
 		WriteAsJSON(lobby.Drawer, &JSEvent{Type: "your-turn", Data: lobby.WordChoice})
 	}
 
+	updateRocketChat(lobby, player)
+
 	//TODO Only send to everyone except for the new player, since it's part of the ready event.
 	triggerPlayersUpdate(lobby)
 }
@@ -787,6 +789,8 @@ func OnDisconnected(lobby *Lobby, player *Player) {
 	player.ws = nil
 
 	playerInLobby.WithLabelValues(lobby.ID).Dec()
+
+	updateRocketChat(lobby, player)
 
 	if !lobby.HasConnectedPlayers() {
 		RemoveLobby(lobby.ID)

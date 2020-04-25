@@ -1,10 +1,9 @@
-package communication
+package game
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/scribble-rs/scribble.rs/game"
 	"log"
 	"net"
 	"net/http"
@@ -17,14 +16,20 @@ type rocketChatPayload struct {
 	Text  string `json:"text"`
 }
 
-func updateRocketChat(lobby *game.Lobby, player *game.Player) {
+func updateRocketChat(lobby *Lobby, player *Player) {
+	//We want to avoid calling the handler twice.
 	state := "connected"
-	players := len(lobby.Players)
-	if player.Connected {
-		state = "disconnected"
-		players -= 1
+	count := 0
+	// Only count connected players
+	for _, p := range lobby.Players {
+		if p.Connected {
+			count++
+		}
 	}
-	if players == 0 {
+	if !player.Connected {
+		state = "disconnected"
+	}
+	if count == 0 {
 		sendRocketChatMessage(fmt.Sprintf("%v has %v. The game has ended.", player.Name, state))
 		return
 	}
@@ -33,7 +38,7 @@ func updateRocketChat(lobby *game.Lobby, player *game.Player) {
 		log.Printf("WARNING: SCRIBBLE_URL not set. Unable to send RocketChat messages")
 		return
 	}
-	sendRocketChatMessage(fmt.Sprintf("%v has %v. There are %v players in the game. Join [here](%v/ssrEnterLobby?lobby_id=%v)", player.Name, state, players, scribbleURL, lobby.ID))
+	sendRocketChatMessage(fmt.Sprintf("%v has %v. There are %v players in the game. Join [here](%v/ssrEnterLobby?lobby_id=%v)", player.Name, state, count, scribbleURL, lobby.ID))
 }
 func sendRocketChatMessage(msg string) {
 	var netTransport = &http.Transport{

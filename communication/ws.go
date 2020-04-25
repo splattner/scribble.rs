@@ -58,13 +58,10 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(player.Name + " has connected")
 
-	updateRocketChat(lobby, player)
-
 	player.SetWebsocket(ws)
 	game.OnConnected(lobby, player)
 
 	ws.SetCloseHandler(func(code int, text string) error {
-		updateRocketChat(lobby, player)
 		game.OnDisconnected(lobby, player)
 		return nil
 	})

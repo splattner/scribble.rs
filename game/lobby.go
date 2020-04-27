@@ -709,6 +709,7 @@ func CreateLobby(playerName, language string, drawingTime, rounds, maxPlayers, c
 	words, err := readWordList(language)
 	if err != nil {
 		RemoveLobby(lobby.ID)
+		openLobbies.Dec()
 		return nil, nil, err
 	}
 
@@ -795,6 +796,7 @@ func OnDisconnected(lobby *Lobby, player *Player) {
 	if !lobby.HasConnectedPlayers() {
 		RemoveLobby(lobby.ID)
 		numRoundperLobby.Delete(prometheus.Labels{"lobby":lobby.ID})
+		playerInLobby.Delete(prometheus.Labels{"lobby":lobby.ID})
 		openLobbies.Dec()
 		log.Printf("Closing lobby %s. There are currently %d open lobbies left.\n", lobby.ID, len(lobbies))
 	} else {

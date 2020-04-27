@@ -31,6 +31,7 @@ func createDefaultLobbyCreatePageData() *CreatePageData {
 		MaxPlayers:        "15",
 		CustomWordsChance: "50",
 		EnableVotekick:    "true",
+		Private:           "false",
 		Language:          "german",
 	}
 }
@@ -46,6 +47,7 @@ type CreatePageData struct {
 	CustomWords       string
 	CustomWordsChance string
 	EnableVotekick    string
+	Private           string
 	Language          string
 }
 
@@ -65,7 +67,7 @@ func ssrCreateLobby(w http.ResponseWriter, r *http.Request) {
 	customWords, customWordsInvalid := parseCustomWords(r.Form.Get("custom_words"))
 	customWordChance, customWordChanceInvalid := parseCustomWordsChance(r.Form.Get("custom_words_chance"))
 	enableVotekick := r.Form.Get("enable_votekick") == "true"
-
+	private := r.Form.Get("private") == "true"
 	//Prevent resetting the form, since that would be annoying as hell.
 	pageData := CreatePageData{
 		SettingBounds:     game.LobbySettingBounds,
@@ -76,6 +78,7 @@ func ssrCreateLobby(w http.ResponseWriter, r *http.Request) {
 		CustomWords:       r.Form.Get("custom_words"),
 		CustomWordsChance: r.Form.Get("custom_words_chance"),
 		EnableVotekick:    r.Form.Get("enable_votekick"),
+		Private:           r.Form.Get("private"),
 		Language:          r.Form.Get("language"),
 	}
 
@@ -108,7 +111,7 @@ func ssrCreateLobby(w http.ResponseWriter, r *http.Request) {
 
 	var playerName = getPlayername(r)
 
-	player, lobby, createError := game.CreateLobby(playerName, language, drawingTime, rounds, maxPlayers, customWordChance, customWords, enableVotekick)
+	player, lobby, createError := game.CreateLobby(playerName, language, drawingTime, rounds, maxPlayers, customWordChance, customWords, enableVotekick, private)
 	if createError != nil {
 		pageData.Errors = append(pageData.Errors, createError.Error())
 		templateError := lobbyCreatePage.ExecuteTemplate(w, "lobby_create.html", pageData)

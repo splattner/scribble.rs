@@ -61,6 +61,7 @@ type Lobby struct {
 	// lobby object.
 	CurrentDrawing []interface{}
 	EnableVotekick bool
+	Private        bool
 }
 
 // WordHint describes a character of the word that is to be guessed, whether
@@ -238,7 +239,8 @@ func createLobby(
 	maxPlayers int,
 	customWords []string,
 	customWordsChance int,
-	enableVotekick bool) *Lobby {
+	enableVotekick bool,
+	private bool) *Lobby {
 
 	createDeleteMutex.Lock()
 
@@ -251,6 +253,7 @@ func createLobby(
 		CustomWordsChance:   customWordsChance,
 		timeLeftTickerReset: make(chan struct{}),
 		EnableVotekick:      enableVotekick,
+		Private:             private,
 		CurrentDrawing:      make([]interface{}, 0, 0),
 	}
 
